@@ -1,50 +1,52 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Assembleur — enchaîne tout le pipeline.
+Assembleur : enchaîne tout le pipeline sur l'archive en fichiers journaliers
+(voir archive.py).
 
-DEUX MODES pour éviter que chaque passage soit de plus en plus long / lourd :
+  python pipeline/assembler.py
+      Mode léger (à chaque cron) :
+      • charge les fichiers des JOURS_SITE derniers jours ;
+      • traduit les titres pas encore traduits de ces jours ;
+      • classe les nouveaux logs et les range dans le fichier de leur jour
+        (téléchargé depuis les Releases si besoin, quand WM_REPO est défini) ;
+      • régénère le site : docs/data/AAAA-MM-JJ.json + docs/meta.json.
 
-  python3 assembler.py            (mode LÉGER, à chaque cron)
-      • traduit seulement les titres pas encore traduits (incrémental) ;
-      • classe les nouveaux logs et les ajoute à l'archive ;
-      • régénère UNIQUEMENT le fichier du site data.js (+ meta.json).
-      → l'archive déjà traitée n'est PAS re-scannée, les gros exports ne sont
-        PAS régénérés : le temps par passage reste proportionnel au nouveau
-        contenu, et le dépôt git ne gonfle presque plus.
+  python pipeline/assembler.py --full
+      Mode complet : réapplique les dictionnaires (bans, fusions, fiches, dates,
+      scores navals, zones maritimes) à TOUS les fichiers présents dans archive/.
+      En CI, seuls les jours récents sont présents ; en local, après avoir tout
+      téléchargé, c'est toute l'archive qui est retraitée.
 
-  python3 assembler.py --full     (mode COMPLET, à la demande / hebdo)
-      • re-scanne TOUTE l'archive (bans, dates, fusions, fiches, rescore naval
-        déplafonné, régions maritimes) — utile quand tu changes tes dictionnaires ;
-      • régénère aussi les gros exports : world_monitor.csv / .db / .xlsx.
+  python pipeline/assembler.py --no-logs
+      Régénère le site sans classer de nouveaux logs.
 
-  python3 assembler.py --no-logs  régénère le site depuis l'archive sans classer.
+Les fichiers d'archive modifiés sont listés dans archive/.a_publier.txt ;
+« python pipeline/archive.py publier » les envoie dans les Releases.
 """
-import csv, json, sys, os, sqlite3, argparse, subprocess, tempfile
+import argparse
+import csv
+import datetime
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from collections import defaultdict
 from pathlib import Path
 
-HERE = Path(__file__).parent
-MASTER = HERE / "consolide_master.csv"
-SITE = HERE.parent / "docs"   # dossier servi par GitHub Pages
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import archive  # noqa: E402
 
-COLS = ["nom_du_media", "titre", "lien", "time_stamp", "country_headquarters",
-        "country_article", "region", "sujet_article", "sujet_media",
-        "official_rating", "indice_fiabilite", "notation", "fiabilité_calcul",
-        "indice_interet_naval", "region_maritime", "fiabilité2", "intérêt marine calcul",
-        "intérêt_par_fiabilité", "confiance_pays_article", "langue", "titre_vo"]
+SITE = HERE.parent / "docs"
+DONNEES_SITE = SITE / "data"
+JOURS_SITE = int(os.environ.get("JOURS_SITE", "7"))
 
 
 def read_csv(path):
     with open(path, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f, delimiter=";"))
-
-
-def write_master(rows):
-    with open(MASTER, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=COLS, delimiter=";",
-                           restval="", extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
 
 
 def num(v):
@@ -53,79 +55,6 @@ def num(v):
         return int(f) if f == int(f) else round(f, 4)
     except (ValueError, TypeError):
         return None
-
-
-def build_site(rows, added=0, heavy=False):
-    """Génère toujours data.js + meta.json (légers, nécessaires au site).
-    Ne régénère les gros exports (CSV / SQLite / XLSX) que si heavy=True."""
-    SITE.mkdir(exist_ok=True)
-    # --- meta.json (horodatage affiché par le bouton Actualiser) ---
-    import datetime
-    (SITE / "meta.json").write_text(json.dumps({
-        "generated": datetime.datetime.now(datetime.timezone.utc)
-                     .strftime("%d/%m/%Y %H:%M UTC"),
-        "count": len(rows), "added": added}, ensure_ascii=False),
-        encoding="utf-8")
-    # --- data.js (données du site) ---
-    recs = []
-    for r in rows:
-        recs.append({"m": r["nom_du_media"], "t": r["titre"], "l": r["lien"],
-                     "d": (r["time_stamp"] or "")[:16],
-                     "ch": r["country_headquarters"], "ca": r["country_article"],
-                     "rg": r["region"], "sa": r["sujet_article"],
-                     "sm": r["sujet_media"], "or": num(r["official_rating"]),
-                     "fi": num(r["indice_fiabilite"]),
-                     "nv": num(r["indice_interet_naval"]) or 0,
-                     "ip": num(r["intérêt_par_fiabilité"]),
-                     "cf": r["confiance_pays_article"],
-                     "rm": r.get("region_maritime") or "",
-                     "lg": r.get("langue") or "en",
-                     "tv": r.get("titre_vo") or "",
-                     "no": r.get("notation") or "F"})
-    js = "window.DATA_WM=" + json.dumps(
-        recs, ensure_ascii=False, separators=(",", ":")).replace(
-        "</script", "<\\/script") + ";"
-    (SITE / "data.js").write_text(js, encoding="utf-8")
-
-    if not heavy:
-        return   # mode léger : on s'arrête là, pas de gros exports recommités
-
-    # --- CSV téléchargeable ---
-    with open(SITE / "world_monitor.csv", "w", encoding="utf-8-sig",
-              newline="") as f:
-        w = csv.DictWriter(f, fieldnames=COLS, delimiter=";")
-        w.writeheader()
-        w.writerows(rows)
-
-    # --- SQLite ---
-    db = SITE / "world_monitor.db"
-    if db.exists():
-        db.unlink()
-    con = sqlite3.connect(db)
-    con.execute("CREATE TABLE articles (%s)" %
-                ", ".join(f'"{c}"' for c in COLS))
-    con.executemany("INSERT INTO articles VALUES (%s)" %
-                    ",".join("?" * len(COLS)),
-                    [[r.get(c, "") for c in COLS] for r in rows])
-    con.commit()
-    con.close()
-
-    # --- XLSX (si openpyxl est disponible) ---
-    try:
-        import openpyxl
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Articles"
-        ws.append(COLS)
-        for r in rows:
-            ws.append([num(r.get(c)) if num(r.get(c)) is not None and
-                       c in ("official_rating", "indice_fiabilite",
-                             "fiabilité_calcul", "indice_interet_naval",
-                             "fiabilité2", "intérêt marine calcul",
-                             "intérêt_par_fiabilité") else r.get(c, "") for c in COLS])
-        wb.save(SITE / "world_monitor.xlsx")
-    except ImportError:
-        print("(openpyxl absent : export XLSX sauté)")
 
 
 def passe_traduction(rows):
@@ -240,53 +169,131 @@ def migration_complete(rows):
     return propres
 
 
+def jours_du_site(ref=None):
+    """Les JOURS_SITE derniers jours (UTC), plus le lendemain pour absorber les
+    décalages horaires des flux."""
+    ref = ref or datetime.datetime.now(datetime.timezone.utc).date()
+    return [ref + datetime.timedelta(days=1 - i) for i in range(JOURS_SITE + 1)]
+
+
+def rec_site(r):
+    return {"m": r["nom_du_media"], "t": r["titre"], "l": r["lien"],
+            "d": (r["time_stamp"] or "")[:16],
+            "ch": r["country_headquarters"], "ca": r["country_article"],
+            "rg": r["region"], "sa": r["sujet_article"],
+            "sm": r["sujet_media"], "or": num(r["official_rating"]),
+            "fi": num(r["indice_fiabilite"]),
+            "nv": num(r["indice_interet_naval"]) or 0,
+            "ip": num(r["intérêt_par_fiabilité"]),
+            "cf": r["confiance_pays_article"],
+            "rm": r.get("region_maritime") or "",
+            "lg": r.get("langue") or "en",
+            "tv": r.get("titre_vo") or "",
+            "no": r.get("notation") or "F"}
+
+
+def build_site(fichiers, jours, ajout):
+    """docs/data/AAAA-MM-JJ.json pour chaque jour du site + docs/meta.json."""
+    DONNEES_SITE.mkdir(parents=True, exist_ok=True)
+    publies, total = [], 0
+    for jour in sorted(jours, reverse=True):
+        rows = fichiers.get(archive.emplacement_jour(jour), [])
+        if not rows:
+            continue
+        rows = sorted(rows, key=lambda r: r["time_stamp"] or "", reverse=True)
+        nom = f"{jour.isoformat()}.json"
+        (DONNEES_SITE / nom).write_text(
+            json.dumps([rec_site(r) for r in rows], ensure_ascii=False,
+                       separators=(",", ":")), encoding="utf-8")
+        publies.append({"jour": jour.isoformat(), "fichier": f"data/{nom}",
+                        "count": len(rows)})
+        total += len(rows)
+    garder = {p["fichier"].split("/")[1] for p in publies}
+    for vieux in DONNEES_SITE.glob("*.json"):
+        if vieux.name not in garder:
+            vieux.unlink()
+    (SITE / "meta.json").write_text(json.dumps({
+        "generated": datetime.datetime.now(datetime.timezone.utc)
+                     .strftime("%d/%m/%Y %H:%M UTC"),
+        "count": total, "added": ajout, "jours_site": JOURS_SITE,
+        "jours": publies, "repo": archive.REPO}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
+    return total
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--logs", default=str(HERE / "logs.csv"))
     ap.add_argument("--no-logs", action="store_true",
                     help="ne pas classifier, juste régénérer le site")
     ap.add_argument("--full", action="store_true",
-                    help="re-scanner toute l'archive + régénérer les gros exports "
-                         "(CSV/DB/XLSX). À lancer à la demande / une fois par semaine.")
+                    help="réappliquer les dictionnaires à tous les fichiers de archive/")
+    ap.add_argument("--date-ref", help=argparse.SUPPRESS)   # tests : AAAA-MM-JJ
     args = ap.parse_args()
 
-    rows = read_csv(MASTER) if MASTER.exists() else []
-    print(f"historique : {len(rows)} articles | mode : {'COMPLET' if args.full else 'léger'}")
+    ref = datetime.date.fromisoformat(args.date_ref) if args.date_ref else None
+    jours = jours_du_site(ref)
 
-    # --- toujours : traduction incrémentale (ne touche que les non-traduits) ---
-    changed = passe_traduction(rows)
+    # --- fichiers de travail : les jours du site (+ toute l'archive locale en --full)
+    cles = {archive.emplacement_jour(j) for j in jours}
+    if args.full:
+        cles |= set(archive.fichiers_locaux())
+    fichiers = {c: archive.charger(*c) for c in sorted(cles)}
+    avant = {c: archive.serialiser(rows) for c, rows in fichiers.items()}
+    rows = [r for lot in fichiers.values() for r in lot]
+    print(f"fichiers de travail : {len(fichiers)} ({len(rows)} articles) | "
+          f"mode : {'COMPLET' if args.full else 'léger'}")
 
-    # --- seulement en --full : re-scan complet de l'archive figée ---
+    # --- traduction incrémentale, puis re-scan complet si demandé
+    passe_traduction(rows)
     if args.full:
         rows = migration_complete(rows)
-        changed = True
 
-    if changed:
-        write_master(rows)
-
-    liens = {r["lien"] for r in rows}
-
-    # --- nouveaux logs (à chaque passage) ---
+    # --- nouveaux logs
     ajout = 0
     if not args.no_logs and Path(args.logs).exists():
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
             out = tmp.name
         subprocess.run([sys.executable, str(HERE / "classify.py"),
                         args.logs, "-o", out], check=True)
-        for r in read_csv(out):
-            if r["lien"] and r["lien"] not in liens:
-                liens.add(r["lien"])
-                rows.append(r)
-                ajout += 1
+        nouveaux = read_csv(out)
         os.unlink(out)
-        print(f"+ {ajout} nouveaux articles classifiés")
-        write_master(rows)
-        Path(args.logs).rename(str(args.logs) + ".integres")
+        for r in nouveaux:
+            c = archive.emplacement(r["time_stamp"])
+            if c not in fichiers:           # jour hors fenêtre : on charge son fichier
+                fichiers[c] = archive.charger(*c)
+                avant[c] = archive.serialiser(fichiers[c])
+                rows.extend(fichiers[c])
+        rows.extend(nouveaux)
 
-    rows.sort(key=lambda r: r["time_stamp"] or "", reverse=True)
-    build_site(rows, ajout, heavy=args.full)
-    print(f"site régénéré ({len(rows)} articles, exports lourds : "
-          f"{'oui' if args.full else 'non'}) → {SITE}/")
+    # --- regroupement par fichier (les dates ont pu changer en --full), sans doublon
+    regroupes = defaultdict(list)
+    liens = set()
+    for r in rows:
+        if r["lien"] and r["lien"] in liens:
+            continue
+        liens.add(r["lien"])
+        regroupes[archive.emplacement(r["time_stamp"])].append(r)
+    total_avant = sum(len(v) for v in fichiers.values())
+    for c in fichiers:
+        fichiers[c] = regroupes.pop(c, [])
+    fichiers.update(regroupes)   # (ne devrait pas arriver : sécurité)
+    ajout = sum(len(v) for v in fichiers.values()) - total_avant
+    if not args.no_logs and Path(args.logs).exists():
+        print(f"+ {ajout} nouveaux articles classifiés")
+        Path(args.logs).replace(str(args.logs) + ".integres")
+
+    # --- écriture des fichiers modifiés
+    n_modifs = 0
+    for c, lot in fichiers.items():
+        if archive.serialiser(lot) != avant.get(c):
+            archive.ecrire_fichier(archive.chemin_local(*c), lot)
+            archive.marquer_a_publier(*c)
+            n_modifs += 1
+    print(f"{n_modifs} fichier(s) d'archive modifié(s)")
+
+    total = build_site(fichiers, jours, max(ajout, 0))
+    print(f"site régénéré : {total} articles sur {JOURS_SITE} jours → {DONNEES_SITE}/")
 
 
 if __name__ == "__main__":

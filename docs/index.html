@@ -190,8 +190,10 @@ button.go:hover{background:#1c8a5c;border-color:#1c8a5c}
     <div class="dlsec"><div class="dllabel"><span>Format</span></div>
       <label><input type="radio" name="dlfmt" value="csv" checked> CSV (sélection)</label>
       <label><input type="radio" name="dlfmt" value="json"> JSON (sélection)</label><br>
-      <label><input type="radio" name="dlfmt" value="xlsx"> XLSX (corpus complet)</label>
-      <label><input type="radio" name="dlfmt" value="db"> SQLite (corpus complet)</label></div>
+    </div>
+    <p id="dl_archive" class="count" style="margin-top:10px;display:none">Le site ne contient que les derniers jours.
+      Archive complète (un fichier CSV compressé par jour) :
+      <a id="dl_archive_lien" href="#" target="_blank" rel="noopener">Releases GitHub</a>.</p>
     <div class="count" style="margin:12px 0"><b id="dl_count">…</b> article(s) dans la sélection</div>
     <div style="display:flex;gap:8px">
       <button class="primary" onclick="doDl()">Télécharger</button>
@@ -805,7 +807,7 @@ function dlB64(name,b64,mime){
   for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
   dlBlob(name,new Blob([u],{type:mime}));
 }
-function dlXLSX(){ location.href='world_monitor.xlsx'; }
+function releasesUrl(){ return META && META.repo ? 'https://github.com/'+META.repo+'/releases' : ''; }
 
 // ---------- panneau de téléchargement ----------
 const DL_KEYS=[['sa','Thèmes'],['ca','Pays traités'],['rg','Régions'],['rm','Régions maritimes'],['m','Médias']];
@@ -846,8 +848,6 @@ function updDlCount(){
 }
 function doDl(){
   const fmt=(document.querySelector('input[name=dlfmt]:checked')||{value:'csv'}).value;
-  if(fmt==='xlsx'){ location.href='world_monitor.xlsx'; return; }
-  if(fmt==='db'){ location.href='world_monitor.db'; return; }
   const rows=dlSelection();
   if(fmt==='json'){
     dlBlob('world_monitor_selection_'+rows.length+'.json',
@@ -859,14 +859,17 @@ function doDl(){
   dlBlob('world_monitor_selection_'+rows.length+'.csv',
          new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'}));
 }
-function dlDB(){ location.href='world_monitor.db'; }
-
-async function loadMeta(){
-  try{
-    const meta = await (await fetch('meta.json?t='+Date.now(), {cache:'no-store'})).json();
-    document.getElementById('lastupdate').textContent =
-      `Dernière collecte : ${meta.generated}` + (meta.added ? ` (+${meta.added} articles)` : '');
-  }catch(e){}
+let META = null;
+function loadMeta(){
+  if(!META) return;
+  document.getElementById('lastupdate').textContent =
+    `Dernière collecte : ${META.generated}` + (META.added ? ` (+${META.added} articles)` : '') +
+    ` · ${META.jours_site} derniers jours`;
+  const url = releasesUrl();
+  if(url){
+    document.getElementById('dl_archive_lien').href = url;
+    document.getElementById('dl_archive').style.display = '';
+  }
 }
 async function refreshData(){
   const b = document.getElementById('refreshbtn');
@@ -888,10 +891,20 @@ async function refreshData(){
   }catch(e){ b.textContent = '⚠ Échec (réessaie)'; }
   setTimeout(()=>{ b.textContent='🔄 Actualiser'; b.disabled=false; }, 3000);
 }
+// Données : meta.json liste un fichier JSON par jour (docs/data/AAAA-MM-JJ.json),
+// du plus récent au plus ancien. Le paramètre ?v= (date de génération) force le
+// rechargement quand les données changent, et profite du cache sinon.
 async function fetchData(bust){
-  const url = 'data.js' + (bust ? '?t='+Date.now() : '');
-  const txt = await (await fetch(url, {cache: bust ? 'no-store' : 'no-cache'})).text();
-  return JSON.parse(txt.slice(txt.indexOf('=')+1).replace(/;\s*$/, ''));
+  const r = await fetch('meta.json?t='+Date.now(), {cache:'no-store'});
+  if(!r.ok) throw new Error('meta.json : HTTP '+r.status);
+  META = await r.json();
+  const v = encodeURIComponent(META.generated || '');
+  const jours = await Promise.all((META.jours || []).map(async j => {
+    const rj = await fetch(j.fichier+'?v='+v, {cache: bust ? 'no-store' : 'default'});
+    if(!rj.ok) throw new Error(j.fichier+' : HTTP '+rj.status);
+    return rj.json();
+  }));
+  return jours.flat();
 }
 function boot(){
   prepare(DATA);
@@ -902,7 +915,7 @@ function boot(){
   try{
     DATA = await fetchData(false);   // no-cache : revalidé auprès du serveur à chaque visite
   }catch(e){
-    document.getElementById('count').textContent = '⚠ Impossible de charger data.js : ' + e.message;
+    document.getElementById('count').textContent = '⚠ Impossible de charger les données : ' + e.message;
     return;
   }
   boot();
