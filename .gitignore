@@ -8,3 +8,10 @@ __pycache__/
 *.pyc
 archive/
 docs/data/
+# Données générées (archive dans les Releases, site généré par le workflow)
+pipeline/consolide_master.csv
+pipeline/vus.txt
+pipeline/logs.csv*
+docs/data.js
+docs/meta.json
+docs/world_monitor.*
