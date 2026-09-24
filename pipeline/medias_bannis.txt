@@ -1,0 +1,11 @@
+# Médias écartés d'office. Depuis l'ajout de la traduction, cette liste ne
+# contient plus QUE les doublons purs : déclinaisons en langue étrangère d'un
+# média dont l'édition anglaise est déjà collectée (mêmes dépêches).
+# Un nom par ligne, * final = préfixe. Éditable librement.
+BBC Hindi
+BBC Mundo
+BBC Russian
+BBC Persian
+BBC Turkce
+BBC Afrique
+DW Turkish

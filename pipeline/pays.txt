@@ -1,0 +1,145 @@
+# Dictionnaire des pays — même format que themes.txt (* = mot fort).
+# Les mots sans * ne décident jamais seuls : il en faut au moins deux, ou un mot fort.
+
+Afghanistan: *afghanistan, *afghan, *kabul, *taliban
+Albania: *albania, *albanian, *tirana
+Algeria: *algeria, *algerian, *algiers
+Argentina: *argentina, *argentine, *buenos aires, *milei
+Armenia: *armenia, *armenian, *yerevan, *pashinyan
+Australia: *australia, *australian, *canberra, *sydney, *melbourne
+Austria: *austria, *austrian, *vienna
+Azerbaijan: *azerbaijan, *azerbaijani, *baku, *aliyev
+Bahrain: *bahrain, *bahraini, *manama
+Bangladesh: *bangladesh, *bangladeshi, *dhaka
+Belgium: *belgium, *belgian, *brussels, *eu commission
+Benin: *benin, *cotonou
+Bermuda: *bermuda
+Bolivia: *bolivia, *bolivian, *la paz
+Botswana: *botswana, *gaborone
+Brazil: *brazil, *brazilian, *brasilia, *lula, neymar, brazil's, miami, *sao paulo, *rio de janeiro, *amazon rainforest
+Bulgaria: *bulgaria, *bulgarian, *sofia
+Burkina Faso: *burkina faso, *ouagadougou, journalist, prominent, forcibly, disappeared
+Cambodia: *cambodia, *cambodian, *phnom penh
+Cameroon: *cameroon, *cameroonian, *yaounde
+Canada: *canada, *canadian, *ottawa, *carney, ltd, *toronto, *quebec, *vancouver, *montreal
+Chile: *chile, *chilean, *santiago
+China: *china, *chinese, *beijing, *xi jinping, china's, gong, falun, accelerates, alibaba, banned, helped, gap, chips, *shanghai, *shenzhen, *hong kong stock, *communist party
+Colombia: *colombia, *colombian, *bogota, *petro, colombia's, daniel, muñoz, election, presidential, goal
+Costa Rica: *costa rica, *costa rican
+Croatia: *croatia, *croatian, *zagreb
+Cuba: *cuba, *cuban, *havana
+Cyprus: *cyprus, *cypriot, *nicosia
+Czech Republic: *czech, *prague
+Democratic Republic of Congo: *congo, *congolese, *kinshasa, *drc
+Denmark: *denmark, *danish, *copenhagen
+Djibouti: *djibouti
+Dominican Republic: *dominican republic, *santo domingo
+Ecuador: *ecuador, *ecuadorian, *quito, *noboa
+Egypt: *egypt, *egyptian, *cairo, *sisi, *suez
+El Salvador: *el salvador, *salvadoran, *bukele
+Estonia: *estonia, *estonian, *tallinn
+Ethiopia: *ethiopia, *ethiopian, *addis ababa, *abiy
+European Union: *european union
+Finland: *finland, *finnish, *helsinki
+France: *france, *french, *paris, *macron, france's, eurosatory, climate, *marseille, *lyon, *elysee, *eiffel
+Georgia: *georgia, *georgian, *tbilisi
+Germany: *germany, *german, *berlin, *merz, berlin-based, *munich, *frankfurt, *bavaria, *bundesbank
+Ghana: *ghana, *ghanaian, *accra, england
+Greece: *greece, *greek, *athens
+Greenland: *greenland
+Guatemala: *guatemala, *guatemalan
+Guinea: *guinea, *conakry
+Haiti: *haiti, *haitian, *port-au-prince
+Hong Kong: *hong kong
+Hungary: *hungary, *hungarian, *budapest, *orban
+Iceland: *iceland, *icelandic, *reykjavik
+India: *india, *indian, *delhi, *modi, india's, india’s, monsoon, reliance, aims, *mumbai, *kashmir, *bollywood, *new delhi, *Andhra Pradesh, *Arunachal Pradesh, *assam, bihar, *chandigarh, *chhattisgarh, *goa, *gujarat, *haryana, *himachal pradesh, *jammu, *cachemire, *harkhand, *karnataka, *kerala, *ladakh, *lakshadweep, *madhya pradesh, *maharashtra, *manipur, *meghalaya, *mizoram, *nagaland, *odisha, *pendjab, *rajasthan, *sikkim, *tamil nadu, *telangana, *tripura, *uttarakhand, *uttar pradesh, *kolkata, *bengal, *kochi, *chennai, *utamm
+Indonesia: *indonesia, *indonesian, *jakarta, *prabowo, msci, emerging
+Iran: *iran, *iranian, *tehran, *khamenei, evacuation, iran's, iran’s, proxies, *irgc, *revolutionary guard, *natanz, *fordow
+Iraq: *iraq, *iraqi, *baghdad, opec
+Ireland: *ireland, *irish, *dublin
+Israel: *israel, *israeli, *netanyahu, *idf, *tel aviv, *jerusalem, *knesset, *mossad, *west jerusalem
+Italy: *italy, *italian, *rome, *meloni, *milan, *venice, *sicily
+Ivory Coast: *ivory coast, *ivorian, *abidjan
+Japan: *japan, *japanese, *tokyo, sony, japan’s, magnitude, *osaka, *kyoto, *nikkei
+Jordan: *jordan, *jordanian, *amman
+Kazakhstan: *kazakhstan, *kazakh, *astana
+Kenya: *kenya, *kenyan, *nairobi, *ruto, kenya’s, protests
+Kuwait: *kuwait, *kuwaiti
+Kyrgyzstan: *kyrgyzstan, *kyrgyz, *bishkek
+Latvia: *latvia, *latvian, *riga
+Lebanon: *lebanon, *lebanese, *beirut, *hezbollah, troops, withdraw, southern
+Libya: *libya, *libyan, *tripoli
+Lithuania: *lithuania, *lithuanian, *vilnius
+Luxembourg: *luxembourg
+Madagascar: *madagascar, *malagasy, *antananarivo
+Malaysia: *malaysia, *malaysian, *kuala lumpur
+Mali: *mali, *malian, *bamako
+Malta: *malta, *maltese, *valletta
+Mexico: *mexico, *mexican, *sheinbaum, mexico's, czechia, chant, *mexico city
+Monaco: *monaco
+Mongolia: *mongolia, *mongolian, *ulaanbaatar
+Montenegro: *montenegro, *podgorica
+Morocco: *morocco, *moroccan, *rabat
+Mozambique: *mozambique, *maputo
+Myanmar: *myanmar, *burmese, *yangon, *junta
+NATO: *nato
+Namibia: *namibia, *namibian, *windhoek
+Nepal: *nepal, *nepali, *kathmandu
+Netherlands: *netherlands, *dutch, *amsterdam, *the hague, *rotterdam
+New Zealand: *new zealand, *wellington, *auckland
+Nicaragua: *nicaragua, *nicaraguan, *managua, *ortega
+Niger: *niger, *nigerien, *niamey, criminal, icc, third
+Nigeria: *nigeria, *nigerian, *abuja, *lagos, *tinubu
+North Korea: *north korea, *pyongyang, *kim jong, korea’s, naval
+Norway: *norway, *norwegian, *oslo
+OPEC: *opec
+Oman: *oman, *omani, *muscat
+Pakistan: *pakistan, *pakistani, *islamabad
+Palestine: *palestine, *palestinian, *gaza, *west bank, *hamas, genocide, children, *rafah, *khan younis, *gaza city
+Panama: *panama, *panamanian
+Paraguay: *paraguay, *paraguayan, *asuncion
+Peru: *peru, *peruvian, *lima
+Philippines: *philippines, *filipino, *manila, *marcos, school
+Poland: *poland, *polish, *warsaw
+Portugal: *portugal, *portuguese, *lisbon
+Qatar: *qatar, *qatari, *doha, lng
+Romania: *romania, *romanian, *bucharest
+Russia: *russia, *russian, *moscow, *kremlin, *putin, obituary, refinery, james, john, ukraine’s, sources, pressure, *siberia, *st petersburg, *gazprom
+Rwanda: *rwanda, *rwandan, *kigali, *kagame
+Saudi Arabia: *saudi, *riyadh, arabia, *aramco, *mecca, *mbs, *jeddah
+Senegal: *senegal, *senegalese, *dakar
+Serbia: *serbia, *serbian, *belgrade, *vucic
+Seychelles: *seychelles
+Singapore: *singapore, *singaporean
+Slovakia: *slovakia, *slovak, *bratislava
+Somalia: *somalia, *somali, *mogadishu, *al-shabaab
+South Africa: *south africa, *south african, *johannesburg, *pretoria, *ramaphosa, *cape town
+South Korea: *south korea, *seoul, korean, son, heung-min, korea's, rout
+South Sudan: *south sudan, *juba
+Spain: *spain, *spanish, *madrid, barcelona, *barcelona, *catalonia
+Sri Lanka: *sri lanka, *sri lankan, *colombo
+Sudan: *sudan, *sudanese, *khartoum
+Sweden: *sweden, *swedish, *stockholm, spotify, draw, advance, highlights
+Switzerland: *switzerland, *swiss, *geneva, *zurich, *davos
+Syria: *syria, *syrian, *damascus
+Taiwan: *taiwan, *taiwanese, *taipei
+Tanzania: *tanzania, *tanzanian, *dodoma, *dar es salaam
+Thailand: *thailand, *thai, *bangkok
+Tunisia: *tunisia, *tunisian, *tunis
+Turkey: *turkey, *turkish, *ankara, *erdogan, summit, nato, *istanbul
+Uganda: *uganda, *ugandan, *kampala, *museveni
+Ukraine: *ukraine, *ukrainian, *kyiv, *zelensky, crimea, ukraine's, ukraine’s, statement, update, strike, *donbas, *kharkiv, *odesa, *odessa, *crimea
+United Arab Emirates: *uae, *emirati, *dubai, *abu dhabi, *emirates
+United Kingdom: *uk, *u.k., *britain, *british, *london, *starmer, resign, keir, england, brexit, prime, slides, *england, *scotland, *wales, *manchester, *liverpool, *bbc, *downing street
+United Nations: *united nations
+United States: *us, *u.s., *usa, *american, *americans, *washington, *trump, *pentagon, *new york, *california, *texas, *florida, *los angeles, *chicago, *fed, *pentagon, *fbi, *nasa, *wall street, *hollywood, *silicon valley, *boston, *seattle
+Uruguay: *uruguay, *uruguayan, *montevideo
+Uzbekistan: *uzbekistan, *uzbek, *tashkent
+Vatican City: *vatican, *pope
+Venezuela: *venezuela, *venezuelan, *caracas, *maduro, quakes, twin, venezuela’s, rescuers, survivors, rescue, toll, devastating
+Vietnam: *vietnam, *vietnamese, *hanoi
+World Health Organization: *world health organization
+Yemen: *yemen, *yemeni, *houthi, *houthis, *sanaa, *red sea attacks
+Zambia: *zambia, *zambian, *lusaka
+Zimbabwe: *zimbabwe, *zimbabwean, *harare

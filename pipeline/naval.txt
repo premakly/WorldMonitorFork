@@ -1,0 +1,18 @@
+# Barème d'intérêt naval — somme des poids, SANS plafond.
+# Format : poids: mot1, mot2, …  (multi-mots autorisés, insensible à la casse)
+# Le score d'un titre = somme des poids de tous les mots trouvés (pas de maximum).
+
+# Très forts — signal naval quasi certain
+20: navy, aircraft carrier, submarine, submarines, warship, warships, destroyer, destroyers, frigate, frigates, naval fleet, naval blockade, naval base, naval exercise, aukus, amphibious assault
+
+# Zones / détroits stratégiques
+14: hormuz, strait of hormuz, taiwan strait, south china sea, red sea, suez canal, panama canal, strait of malacca, bab-el-mandeb
+
+# Forts
+10: tankers, supertanker, supertankers, seafarers, corvette, cruiser, coast guard, shipyard, naval contract, naval modernization, tanker, cargo ship, container ship, hijacked ship, ship seized, houthi, houthis, piracy
+
+# Modérés
+5: maritime, vessel, vessels, fleet, maritime trade, shipping lane, dock, harbor, admiral, sailor, sailors, flotilla
+
+# Faibles — jamais suffisants seuls
+2: ship, ships, sea, ocean, coastal, port

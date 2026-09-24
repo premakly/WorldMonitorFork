@@ -1,0 +1,6 @@
+# Fins de ligne Unix partout (évite les CRLF introduits par des outils Windows,
+# qui cassent le script shell du conteneur)
+* text=auto eol=lf
+*.db   binary
+*.xlsx binary
+*.pyc  binary

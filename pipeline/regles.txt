@@ -1,0 +1,23 @@
+# Règles de contexte — PRIORITAIRES sur les mots-clés de themes.txt.
+# Syntaxe : Thème: partie1 + partie2 + !exclusion
+#   +  toutes les parties doivent être présentes dans le titre
+#   |  variantes au sein d'une partie (mot1|mot2)
+#   !  la partie ne doit PAS être présente
+#   @pays = n'importe quel pays du dictionnaire pays.txt (mots forts)
+# Première règle qui matche = gagnante. Ordre = priorité.
+
+Guerre/violence: @pays + bombing|bombed|bombs|shelling|offensive|incursion|invasion
+Guerre/violence: @pays + strikes|struck|strike + !deal|agreement|trade|union|workers
+Guerre/violence: nuclear + iran|enrichment|uranium|centrifuges|inspectors
+Guerre/violence: idf|hezbollah|hamas|houthis|houthi|wagner|kremlin forces + @pays
+Guerre/violence: gaza|rafah|donbas|kharkiv|frontline + @pays
+Guerre/violence: @pays + hostage|hostages|casualties|death toll
+Militaire/Défense: @pays + drills|military exercise|deployment|warship|warships|air defense
+Militaire/Défense: pentagon|defense ministry|defence ministry + spend|budget|billion
+Diplomatie: @pays + talks|negotiations|summit|meets with|state visit|envoy
+Diplomatie: @pays + @pays|meeting|leaders|agreement + !cup|match|final|beats|defeats|league|open|grand slam|olympic|olympics|vs|series|test|tour|race|win|wins|champion|champions|war|strikes|strike|attack|killed|missile|bombing|shares|stocks|tariffs|oil|trade
+Énergie/Ressources: oil + prices|output|production|exports|barrel
+Markets and business: @pays + tariffs|trade deal|trade war
+Sports: world cup|club world cup|grand prix
+Tech: apple|google|microsoft|meta|amazon|samsung|nvidia|intel|sony|huawei|tesla + unveils|launches|launch|update|feature|device|glasses|headset|technology + !earnings|shares|stock|stocks|profit|ipo|valuation
+Tech: spacex|nasa|blue origin|rocket|starship|esa + launch|mission|orbit|flight|landing|crew

@@ -1,0 +1,27 @@
+alias;canonique
+# Table de fusion des médias : les déclinaisons de flux sont rattachées au média noté dans medias.csv.
+# Un alias finissant par * = préfixe (ex. "Reuters *" attrape Reuters World, Reuters Business…).
+# Les correspondances exactes priment sur les préfixes. Éditable librement.
+Guardian *;The Guardian
+Reuters *;Reuters
+BBC *;BBC
+CNN *;CNN
+AP *;AP News
+Bloomberg *;Bloomberg
+Al Jazeera *;Al Jazeera
+Al Arabiya;Al Arabiya English
+Al Arabiya *;Al Arabiya English
+France 24 *;France 24
+DW *;DW News
+RT *;RT
+TechCrunch *;TechCrunch
+The Verge *;The Verge
+VentureBeat *;VentureBeat
+MIT Tech Review *;MIT Tech Review
+MIT Research;MIT Tech Review
+ArXiv *;ArXiv
+NDTV *;NDTV
+Nikkei *;Nikkei Asia
+Asharq *;Asharq News
+Infobae *;Infobae
+Yonhap *;Yonhap News

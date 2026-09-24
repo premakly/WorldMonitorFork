@@ -1,0 +1,14 @@
+# Zones maritimes chaudes — un article est rattaché à la zone dont il contient
+# le plus de mots-clés. Format : Zone: mot1, mot2, …  (éditable librement,
+# l'ordre des lignes départage les ex æquo).
+
+Détroit d'Ormuz: hormuz, strait of hormuz, persian gulf, gulf of oman, bandar abbas, kharg island
+Détroit de Taïwan: taiwan strait, cross-strait, kinmen, matsu, taiwan blockade
+Mer de Chine méridionale: south china sea, spratly, spratlys, paracel, paracels, scarborough shoal, natuna, nine-dash
+Mer Rouge / Bab-el-Mandeb: red sea, bab-el-mandeb, bab el-mandeb, gulf of aden, hodeidah, houthi, houthis
+Canal de Suez: suez canal, suez
+Canal de Panama: panama canal
+Détroit de Malacca: strait of malacca, malacca, singapore strait
+Mer Noire: black sea, bosphorus, bosporus, kerch, odesa port, danube ports
+Baltique: baltic sea, kaliningrad, gulf of finland, gotland
+Arctique: arctic sea, northern sea route, barents sea, svalbard

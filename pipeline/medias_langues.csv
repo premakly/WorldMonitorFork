@@ -1,0 +1,61 @@
+media;langue
+# Langue de publication déclarée des flux non anglophones du catalogue WM.
+# Sert d'arbitre quand le titre seul ne suffit pas. Éditable librement.
+Tagesschau;de
+Bild;de
+Der Spiegel;de
+Die Zeit;de
+Le Monde;fr
+Jeune Afrique;fr
+BBC Afrique;fr
+El País;es
+El Mundo;es
+BBC Mundo;es
+Clarín;es
+El Tiempo;es
+La Silla Vacía;es
+Primicias;es
+El Universo;es
+Infobae Americas;es
+O Globo;pt
+Folha de S.Paulo;pt
+Brasil Paralelo;pt
+ANSA;it
+Corriere della Sera;it
+Repubblica;it
+NOS Nieuws;nl
+NRC;nl
+De Telegraaf;nl
+SVT Nyheter;sv
+Dagens Nyheter;sv
+Svenska Dagbladet;sv
+Hurriyet;tr
+DW Turkish;tr
+BBC Turkce;tr
+TVN24;pl
+Polsat News;pl
+Rzeczpospolita;pl
+Telex;hu
+Index.hu;hu
+HVG;hu
+444.hu;hu
+24.hu;hu
+Híradó;hu
+Portfolio.hu;hu
+ATV;hu
+N1 Croatia;hr
+Index.hr;hr
+Jutarnji list;hr
+Kathimerini;el
+Naftemporiki;el
+in.gr;el
+iefimerida;el
+Proto Thema;el
+BBC Hindi;hi
+Aaj Tak;hi
+NDTV India;hi
+Amar Ujala;hi
+BBC Russian;ru
+Meduza;ru
+BBC Persian;fa
+VnExpress;vi

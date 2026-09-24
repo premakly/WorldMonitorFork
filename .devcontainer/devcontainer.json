@@ -1,0 +1,42 @@
+{
+  "name": "Flux WM Aggregate",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+
+  // Modèles de traduction Argos conservés dans un volume : pas de re-téléchargement
+  // à chaque reconstruction du conteneur
+  "mounts": [
+    "source=flux-wm-argos,target=/home/vscode/.local/share/argos-translate,type=volume"
+  ],
+
+  // torch en version CPU d'abord (dépendance d'Argos), sinon pip tire la version CUDA
+  "postCreateCommand": "sudo chown -R vscode /home/vscode/.local && pip install --user torch --index-url https://download.pytorch.org/whl/cpu && pip install --user -r requirements.txt",
+
+  // Site : cd docs && python -m http.server 8000
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "Site World Monitor", "onAutoForward": "openBrowser" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "mechatroner.rainbow-csv"
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "search.exclude": {
+          "docs/data.js": true,
+          "pipeline/vus.txt": true,
+          "**/*.csv": true
+        },
+        "files.watcherExclude": {
+          "docs/**": true,
+          "pipeline/*.csv": true,
+          "pipeline/vus.txt": true
+        }
+      }
+    }
+  }
+}
