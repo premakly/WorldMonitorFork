@@ -54,7 +54,7 @@ jobs:
 
       - name: Dépendances (traduction non bloquante)
         run: |
-          pip install openpyxl
+          pip install openpyxl pyarrow
           { pip install torch --index-url https://download.pytorch.org/whl/cpu \
             && pip install argostranslate \
             && python -c "import argostranslate.translate; print('Argos OK')"; } \

@@ -15,3 +15,4 @@ pipeline/logs.csv*
 docs/data.js
 docs/meta.json
 docs/world_monitor.*
+archive_csv/
