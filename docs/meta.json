@@ -1,1 +1,44 @@
-{"generated": "18/07/2026 12:17 UTC", "count": 184084, "added": 1030}
+{
+ "generated": "25/09/2026 16:46 UTC",
+ "count": 46006,
+ "added": 0,
+ "jours_site": 7,
+ "jours": [
+  {
+   "jour": "2026-09-25",
+   "fichier": "data/2026-09-25.json",
+   "count": 8232
+  },
+  {
+   "jour": "2026-09-24",
+   "fichier": "data/2026-09-24.json",
+   "count": 21369
+  },
+  {
+   "jour": "2026-09-23",
+   "fichier": "data/2026-09-23.json",
+   "count": 8665
+  },
+  {
+   "jour": "2026-09-22",
+   "fichier": "data/2026-09-22.json",
+   "count": 4335
+  },
+  {
+   "jour": "2026-09-21",
+   "fichier": "data/2026-09-21.json",
+   "count": 2230
+  },
+  {
+   "jour": "2026-09-20",
+   "fichier": "data/2026-09-20.json",
+   "count": 600
+  },
+  {
+   "jour": "2026-09-19",
+   "fichier": "data/2026-09-19.json",
+   "count": 575
+  }
+ ],
+ "repo": "premakly/WorldMonitorFork"
+}

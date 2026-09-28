@@ -78,6 +78,7 @@ def passe_traduction(rows):
                    and traduction.traduction_cassee(r.get("titre") or "", r.get("titre_vo")))
     print(f"à traduire : {a_traduire} · traductions cassées à reprendre : {n_casses}")
     n_trad, n_repare = 0, 0
+    classifieur = None
     for r in rows:
         lg = (r.get("langue") or "").strip()
         vo = (r.get("titre_vo") or "").strip()
@@ -93,6 +94,11 @@ def passe_traduction(rows):
         if newvo:                            # traduction propre
             r["titre"], r["titre_vo"] = t, newvo
             n_trad += 1
+            # le titre a changé : thème, pays, scores… sont recalculés dessus
+            if classifieur is None:
+                import classify
+                classifieur = classify.Classifieur()
+            r.update({k: str(v) for k, v in classifieur.classer(t, r["nom_du_media"]).items()})
         else:                                # intraduisible / encore cassée → original lisible
             r["titre"], r["titre_vo"] = t, ""
     if n_trad or n_repare:

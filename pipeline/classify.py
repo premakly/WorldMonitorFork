@@ -360,42 +360,86 @@ THEME_FALLBACK = {
 }
 
 # ---------------------------------------------------------------- pipeline
+class Classifieur:
+    """Charge les dictionnaires une fois et classe un titre (déjà en anglais).
+    Utilisé pour les nouveaux logs (main) et pour reclasser un article de
+    l'archive dont le titre vient d'être traduit (assembler.passe_traduction)."""
+
+    def __init__(self):
+        self.themes = compile_dict(load_dict(HERE / "themes.txt"))
+        pays_raw = load_dict(HERE / "pays.txt")
+        self.pays = compile_dict(pays_raw)
+        self.rules = load_rules(HERE / "regles.txt", pays_raw)
+        self.naval = load_naval(HERE / "naval.txt")
+        self.zones = load_zones(HERE / "regions_maritimes.txt")
+        self.regions = json.loads((HERE / "regions.json").read_text(encoding="utf-8"))
+        self.medias = {}
+        with open(HERE / "medias.csv", encoding="utf-8") as f:
+            for row in csv.DictReader(f, delimiter=";"):
+                self.medias[row["media"].strip().lower()] = row
+
+    def classer(self, titre, media):
+        """→ dict des colonnes calculées à partir du titre et du média canonique."""
+        m = self.medias.get(media.lower(), {})
+        gov = ".gov" in media.lower()
+        minfo = (m.get("pays_siege", ""),
+                 "Politique" if gov else m.get("theme_media", ""))
+        th = classify_theme(titre, self.themes, self.rules)
+        if th == "Non déterminé":
+            th = THEME_FALLBACK.get(m.get("theme_media", ""), "Non déterminé")
+        ca, conf = classify_pays(titre, self.pays, minfo)
+        # indices fiabilité / naval — source inconnue = F et 4,5 par défaut
+        notation = (m.get("notation") or "F").strip().upper()
+        try:
+            fia = float(m.get("indice_fiabilite") or 4.5)
+        except ValueError:
+            fia = 4.5
+        fia = int(fia) if fia == int(fia) else fia
+        nav = score_naval(titre, self.naval)
+        fia2 = round(0.6 / fia, 4)
+        marine = round(nav * 0.4 / 40, 4)
+        return {
+            "country_headquarters": m.get("pays_siege", "Undetermined"),
+            "country_article": ca, "region": self.regions.get(ca, "Undetermined"),
+            "sujet_article": th, "sujet_media": m.get("theme_media", ""),
+            "official_rating": m.get("note", ""), "indice_fiabilite": fia,
+            "notation": notation, "fiabilité_calcul": round(40 / fia, 4),
+            "indice_interet_naval": nav,
+            "region_maritime": zone_maritime(titre, self.zones),
+            "fiabilité2": fia2, "intérêt marine calcul": marine,
+            "intérêt_par_fiabilité": round(fia2 + marine, 4),
+            "confiance_pays_article": conf,
+        }
+
+
+COLS_SORTIE = ["nom_du_media", "titre", "lien", "time_stamp",
+               "country_headquarters", "country_article", "region",
+               "sujet_article", "sujet_media", "official_rating",
+               "indice_fiabilite", "notation", "fiabilité_calcul",
+               "indice_interet_naval", "region_maritime", "fiabilité2",
+               "intérêt marine calcul", "intérêt_par_fiabilité",
+               "confiance_pays_article", "langue", "titre_vo"]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("logs", help="CSV d'entrée : media;titre;lien;date")
     ap.add_argument("-o", "--out", default="consolide.csv")
     args = ap.parse_args()
 
-    themes = compile_dict(load_dict(HERE / "themes.txt"))
-    pays_raw = load_dict(HERE / "pays.txt")
-    pays = compile_dict(pays_raw)
-    rules = load_rules(HERE / "regles.txt", pays_raw)
-    naval = load_naval(HERE / "naval.txt")
-    zones = load_zones(HERE / "regions_maritimes.txt")
+    cl = Classifieur()
     alias = load_alias(HERE / "medias_alias.csv")
     bans = load_bans(HERE / "medias_bannis.txt")
     sys.path.insert(0, str(HERE))
     import traduction
     med_langues = traduction.load_medias_langues()
-    regions = json.loads((HERE / "regions.json").read_text(encoding="utf-8"))
-    medias = {}
-    with open(HERE / "medias.csv", encoding="utf-8") as f:
-        for row in csv.DictReader(f, delimiter=";"):
-            medias[row["media"].strip().lower()] = row
 
-    n_in = n_theme = n_pays = 0
+    n_in = n_theme = n_pays = n_ban = n_trad = 0
     with open(args.logs, encoding="utf-8") as fin, \
          open(args.out, "w", encoding="utf-8", newline="") as fout:
         r = csv.DictReader(fin, delimiter=";")
         w = csv.writer(fout, delimiter=";")
-        w.writerow(["nom_du_media", "titre", "lien", "time_stamp",
-                    "country_headquarters", "country_article", "region",
-                    "sujet_article", "sujet_media", "official_rating",
-                    "indice_fiabilite", "notation", "fiabilité_calcul",
-                    "indice_interet_naval", "region_maritime", "fiabilité2",
-                    "intérêt marine calcul", "intérêt_par_fiabilité",
-                    "confiance_pays_article", "langue", "titre_vo"])
-        n_ban = n_trad = 0
+        w.writerow(COLS_SORTIE)
         for row in r:
             n_in += 1
             if est_banni(row.get("media", ""), bans):
@@ -406,36 +450,13 @@ def main():
             if titre_vo:
                 n_trad += 1
             media = canonical_media(row.get("media", ""), alias)
-            m = medias.get(media.lower(), {})
-            gov = ".gov" in media.lower()
-            minfo = (m.get("pays_siege", ""),
-                     "Politique" if gov else m.get("theme_media", ""))
-            th = classify_theme(titre, themes, rules)
-            if th == "Non déterminé":
-                th = THEME_FALLBACK.get(m.get("theme_media", ""), "Non déterminé")
-            ca, conf = classify_pays(titre, pays, minfo)
-            rg = regions.get(ca, "Undetermined")
-            if th != "Non déterminé": n_theme += 1
-            if ca != "Undetermined": n_pays += 1
-            # indices fiabilité / naval — source inconnue = F et 4,5 par défaut
-            notation = (m.get("notation") or "F").strip().upper()
-            try:
-                fia = float(m.get("indice_fiabilite") or 4.5)
-            except ValueError:
-                fia = 4.5
-            fia = int(fia) if fia == int(fia) else fia
-            nav = score_naval(titre, naval)
-            zm = zone_maritime(titre, zones)
-            fia_calc = round(40 / fia, 4)
-            fia2 = round(0.6 / fia, 4)
-            marine = round(nav * 0.4 / 40, 4)
-            composite = round(fia2 + marine, 4)
-            w.writerow([media, titre, row.get("lien", ""),
-                        norm_date(row.get("date", "")),
-                        m.get("pays_siege", "Undetermined"), ca, rg, th,
-                        m.get("theme_media", ""), m.get("note", ""),
-                        fia, notation, fia_calc, nav, zm, fia2, marine,
-                        composite, conf, lang, titre_vo])
+            c = cl.classer(titre, media)
+            if c["sujet_article"] != "Non déterminé": n_theme += 1
+            if c["country_article"] != "Undetermined": n_pays += 1
+            c.update({"nom_du_media": media, "titre": titre, "lien": row.get("lien", ""),
+                      "time_stamp": norm_date(row.get("date", "")),
+                      "langue": lang, "titre_vo": titre_vo})
+            w.writerow([c[k] for k in COLS_SORTIE])
 
     print(f"{n_in} articles | {n_trad} traduits en anglais | {n_ban} doublons"
           f" écartés | thème déterminé : {n_theme} | pays déterminé : {n_pays}")

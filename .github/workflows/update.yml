@@ -26,7 +26,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 120
     environment:
       name: github-pages
       url: ${{ steps.deploiement.outputs.page_url }}
@@ -52,13 +52,32 @@ jobs:
             ~/.local/cache/argos-translate
           key: argos-models-v1
 
+      - name: Cache du modèle Opus-MT (croate, serbe, bosnien)
+        id: cache-slave
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/wm-modeles
+          key: opus-mt-sla-en-ct2-v1
+
       - name: Dépendances (traduction non bloquante)
         run: |
-          pip install openpyxl pyarrow
+          pip install openpyxl pyarrow ctranslate2 sentencepiece
           { pip install torch --index-url https://download.pytorch.org/whl/cpu \
             && pip install argostranslate \
             && python -c "import argostranslate.translate; print('Argos OK')"; } \
             || echo "⚠ Argos indisponible pour ce run : la traduction sera sautée, tout le reste continue"
+
+      # Une seule fois (puis gardé en cache) : conversion du modèle Hugging Face.
+      # Non bloquant : sans lui, seuls les titres croates/serbes restent non traduits.
+      - name: Préparer le modèle Opus-MT
+        continue-on-error: true
+        run: |
+          if python -c "import sys; sys.path.insert(0, 'pipeline'); import traduction_slave as t; sys.exit(0 if t.disponible() else 1)"; then
+            echo "Modèle Opus-MT présent (cache)"
+          else
+            pip install transformers sacremoses
+            python pipeline/traduction_slave.py preparer
+          fi
 
       - name: Récupérer l'état du collecteur (vus.txt)
         run: python pipeline/archive.py preparer

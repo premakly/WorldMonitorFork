@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Traduction des titres non anglais — Argos Translate (open source, hors-ligne).
+Traduction des titres non anglais — Argos Translate (open source, hors-ligne),
+complété par Opus-MT (traduction_slave.py) pour le croate, le serbe et le
+bosnien, absents d'Argos.
 
 Principe éthique : on ne jette aucune langue. Un titre non anglais est traduit
 en anglais (pour la classification et la recherche) ; l'original et la langue
@@ -63,6 +65,10 @@ _STOPS = {
     "hr": {"je", "su", "za", "na", "koji", "kako", "nakon", "protiv"},
 }
 _LATIN_EXT = re.compile(r"[Ā-ɏ]")
+# « je », « na », « za »… existent aussi en polonais, slovène, néerlandais :
+# le croate n'est retenu que s'il y a une lettre propre au croate dans le titre
+# (sinon, c'est la langue déclarée du média qui tranche).
+_HR_LETTRES = re.compile(r"[čćđšž]", re.I)
 
 
 def load_medias_langues(path=None):
@@ -92,6 +98,8 @@ def detect_lang(titre, media="", medias_langues=None):
     toks = re.findall(r"[a-zà-ÿā-ɏ']+", t.lower())
     scores = {l: sum(1 for w in toks if w in s) for l, s in _STOPS.items()}
     en = scores.pop("en")
+    if not _HR_LETTRES.search(t):
+        scores.pop("hr", None)
     best = max(scores, key=scores.get) if scores else None
     if best and scores[best] >= 2 and scores[best] > en:
         return best
@@ -147,6 +155,11 @@ def _argos():
     """Charge argostranslate si présent (sinon mode dégradé sans traduction)."""
     global _ARGOS_OK, _ARGOS_ERR
     if _ARGOS_OK is None:
+        try:   # onnxruntime (utilisé par Argos) : pas d'avertissements matériels
+            import onnxruntime  # sous WSL, il signale le bus virtuel Hyper-V
+            onnxruntime.set_default_logger_severity(3)
+        except Exception:
+            pass
         try:
             import argostranslate.package, argostranslate.translate  # noqa
             _ARGOS_OK = True
@@ -158,7 +171,11 @@ def _argos():
 
 
 def moteur_statut():
-    return "Argos opérationnel" if _argos() else f"ARGOS INDISPONIBLE ({_ARGOS_ERR})"
+    import traduction_slave
+    argos = "Argos opérationnel" if _argos() else f"ARGOS INDISPONIBLE ({_ARGOS_ERR})"
+    slave = ("Opus-MT slave opérationnel" if traduction_slave.disponible()
+             else "Opus-MT slave ABSENT (hr/sr/bs non traduits)")
+    return f"{argos} · {slave}"
 
 
 def _ensure_model(code):
@@ -189,7 +206,12 @@ def _ensure_model(code):
 
 def traduire(titre, code):
     """Titre traduit en anglais, ou None si impossible / traduction ratée."""
-    if code in ("en", "xx") or not _argos():
+    if code in ("en", "xx"):
+        return None
+    import traduction_slave
+    if code in traduction_slave.LANGUES:
+        return traduction_slave.traduire(str(titre))
+    if not _argos():
         return None
     try:
         if not _ensure_model(code):

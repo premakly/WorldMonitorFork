@@ -1,3 +1,5 @@
 openpyxl
 argostranslate
 pyarrow
+ctranslate2
+sentencepiece
